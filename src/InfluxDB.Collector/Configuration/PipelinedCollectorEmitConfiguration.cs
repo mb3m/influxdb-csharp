@@ -57,12 +57,19 @@ namespace InfluxDB.Collector.Configuration
             }
             else
             {
-                dispose = () => { };
+                dispose = null;
             }
 
             foreach (var emitter in _emitters)
             {
                 result.Add(new DelegateEmitter(emitter));
+            }
+
+
+            // perfs-short-circuit: no need for an aggregator if there is only one emitter
+            if (result.Count == 1)
+            {
+                return result[0];
             }
 
             return new AggregateEmitter(result);
