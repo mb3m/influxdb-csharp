@@ -1,7 +1,11 @@
-﻿namespace InfluxDB.Collector.Pipeline
+﻿using System.Collections.Generic;
+
+namespace InfluxDB.Collector.Pipeline
 {
     interface IPointEmitter
     {
-        void Emit(PointData[] points);
+        void Emit(PointData point);
+
+        void Emit(IEnumerable<PointData> points);
     }
 }

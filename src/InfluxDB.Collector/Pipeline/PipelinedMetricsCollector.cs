@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 
 namespace InfluxDB.Collector.Pipeline
 {
@@ -16,7 +17,13 @@ namespace InfluxDB.Collector.Pipeline
             _dispose = dispose;
         }
 
-        protected override void Emit(PointData[] points)
+        protected override void Emit(PointData point)
+        {
+            _enricher.Enrich(point);
+            _emitter.Emit(point);
+        }
+
+        protected override void Emit(IEnumerable<PointData> points)
         {
             foreach (var point in points)
                 _enricher.Enrich(point);

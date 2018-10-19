@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\InfluxDB.Collector\InfluxDB.Collector.csproj" />
     <ProjectReference Include="..\..\src\InfluxDB.LineProtocol\InfluxDB.LineProtocol.csproj" />
   </ItemGroup>
 </Project>

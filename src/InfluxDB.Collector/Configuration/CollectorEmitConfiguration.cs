@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using InfluxDB.Collector.Pipeline;
 
 namespace InfluxDB.Collector.Configuration
@@ -12,6 +13,6 @@ namespace InfluxDB.Collector.Configuration
             return InfluxDB(new Uri(serverBaseAddress), database, username, password);
         }
 
-        public abstract CollectorConfiguration Emitter(Action<PointData[]> emitter);
+        public abstract CollectorConfiguration Emitter(Action<IEnumerable<PointData>> emitter);
     }
 }

@@ -66,13 +66,13 @@ namespace InfluxDB.Collector.Pipeline.Batch
 
                 if (_maxBatchSize == null || batch.Count <= _maxBatchSize.Value)
                 {
-                    _parent.Emit(batch.ToArray());
+                    _parent.Emit(batch);
                 }
                 else
                 {
                     foreach (var chunk in batch.Batch(_maxBatchSize.Value))
                     {
-                        _parent.Emit(chunk.ToArray());
+                        _parent.Emit(chunk);
                     }
                 }
             }
@@ -92,7 +92,7 @@ namespace InfluxDB.Collector.Pipeline.Batch
             return Task.Delay(0);
         }
 
-        public void Emit(PointData[] points)
+        public void Emit(PointData point)
         {
             lock (_stateLock)
             {
@@ -106,7 +106,25 @@ namespace InfluxDB.Collector.Pipeline.Batch
 
             lock (_queueLock)
             {
-                foreach(var point in points)
+                _queue.Enqueue(point);
+            }
+        }
+
+        public void Emit(IEnumerable<PointData> points)
+        {
+            lock (_stateLock)
+            {
+                if (_unloading) return;
+                if (!_started)
+                {
+                    _started = true;
+                    _timer.Start(TimeSpan.Zero);
+                }
+            }
+
+            lock (_queueLock)
+            {
+                foreach (var point in points)
                     _queue.Enqueue(point);
             }
         }

@@ -49,11 +49,21 @@ namespace InfluxDB.Collector
             }
         }
 
-        void IPointEmitter.Emit(PointData[] points)
+        void IPointEmitter.Emit(PointData point)
+        {
+            Emit(point);
+        }
+
+        void IPointEmitter.Emit(IEnumerable<PointData> points)
         {
             Emit(points);
         }
 
-        protected abstract void Emit(PointData[] points);
+        protected virtual void Emit(PointData point) 
+        {
+            Emit(new[] { point });
+        }
+
+        protected abstract void Emit(IEnumerable<PointData> points);
     }
 }
