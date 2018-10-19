@@ -6,9 +6,9 @@ namespace InfluxDB.LineProtocol.Payload
 {
     public class LineProtocolPayload
     {
-        readonly List<LineProtocolPoint> _points = new List<LineProtocolPoint>();
+        readonly List<ILineProtocolPoint> _points = new List<ILineProtocolPoint>();
 
-        public void Add(LineProtocolPoint point)
+        public void Add(ILineProtocolPoint point)
         {
             if (point == null) throw new ArgumentNullException(nameof(point));
             _points.Add(point);

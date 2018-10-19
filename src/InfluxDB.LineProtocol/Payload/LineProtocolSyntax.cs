@@ -25,6 +25,11 @@ namespace InfluxDB.LineProtocol.Payload
             { typeof(TimeSpan), FormatTimespan }
         };
 
+        public static Func<object, string> GetFormatter(Type type)
+        {
+            return Formatters.TryGetValue(type, out var formatter) ? formatter : FormatString;
+        }
+
         public static string EscapeName(string nameOrKey)
         {
             if (nameOrKey == null) throw new ArgumentNullException(nameof(nameOrKey));
@@ -62,6 +67,8 @@ namespace InfluxDB.LineProtocol.Payload
         {
             return ((bool)b) ? "t" : "f";
         }
+
+        static string FormatString(object o) => FormatString(o?.ToString() ?? string.Empty);
 
         static string FormatString(string s)
         {

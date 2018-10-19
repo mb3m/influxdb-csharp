@@ -2,6 +2,7 @@
 using InfluxDB.LineProtocol.Payload;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Benchmark
@@ -10,7 +11,7 @@ namespace Benchmark
     /// This benchmark examines the payload construction and allocations.
     /// </summary>
     [MemoryDiagnoser]
-    public class PayloadBenchmark
+    public class LineProtocolPointFormatBenchmark
     {
         private const int N = 500;
 
@@ -18,18 +19,19 @@ namespace Benchmark
 
         private readonly (DateTime timestamp, string colour, double value)[] data;
 
-        public PayloadBenchmark()
+        private LineProtocolPayload payload;
+
+        public LineProtocolPointFormatBenchmark()
         {
             var random = new Random(755);
             var now = DateTime.UtcNow;
             data = Enumerable.Range(0, N).Select(i => (now.AddMilliseconds(random.Next(2000)), Colours[random.Next(Colours.Length)], random.NextDouble())).ToArray();
         }
 
-        [Benchmark(Baseline = true)]
-        public object DictionaryPayload()
+        [GlobalSetup(Target = nameof(DictionaryPayload))]
+        public void PrepareDictionaryPayload()
         {
-            var payload = new LineProtocolPayload();
-
+            payload = new LineProtocolPayload();
             foreach (var (timestamp, colour, value) in data)
             {
                 payload.Add(new LineProtocolPoint(
@@ -45,32 +47,43 @@ namespace Benchmark
                     timestamp
                 ));
             }
-
-            return payload;
         }
 
-        [Benchmark]
-        public object ArrayPayload()
+        [Benchmark(Baseline = true)]
+        public object DictionaryPayload()
         {
-            var payload = new LineProtocolPayload();
+            var writer = new StringWriter();
+            payload.Format(writer);
+            return writer.ToString();
+        }
 
+        [GlobalSetup(Target = nameof(GenericPayload))]
+        public void PrepareGenericPayload()
+        {
+            payload = new LineProtocolPayload();
             foreach (var (timestamp, colour, value) in data)
             {
                 payload.Add(new LineProtocolPoint(
                     "example",
-                    new[]
+                    new Dictionary<string, object>
                     {
-                        new KeyValuePair<string, object>("value", value)
+                        {"value", value}
                     },
-                    new[]
+                    new Dictionary<string, string>
                     {
-                        new KeyValuePair<string, string>("colour", colour)
+                        {"colour", colour}
                     },
                     timestamp
                 ));
             }
+        }
 
-            return payload;
+        [Benchmark]
+        public object GenericPayload()
+        {
+            var writer = new StringWriter();
+            payload.Format(writer);
+            return writer.ToString();
         }
     }
 }
