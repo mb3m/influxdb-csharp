@@ -8,21 +8,27 @@ namespace InfluxDB.LineProtocol.Payload
     public class LineProtocolPoint
     {
         public string Measurement { get; }
-        public IReadOnlyDictionary<string, object> Fields { get; }
-        public IReadOnlyDictionary<string, string> Tags { get; }
+        public IEnumerable<KeyValuePair<string, object>> Fields { get; }
+        public IEnumerable<KeyValuePair<string, string>> Tags { get; }
         public DateTime? UtcTimestamp { get; }
-        
+                
         public LineProtocolPoint(
             string measurement,
-            IReadOnlyDictionary<string, object> fields,
-            IReadOnlyDictionary<string, string> tags = null,
+            IEnumerable<KeyValuePair<string, object>> fields,
+            IEnumerable<KeyValuePair<string, string>> tags = null,
             DateTime? utcTimestamp = null)
         {
             if (string.IsNullOrEmpty(measurement)) throw new ArgumentException("A measurement name must be specified");
-            if (fields == null || fields.Count == 0) throw new ArgumentException("At least one field must be specified");
+            if (fields == null) throw new ArgumentException("At least one field must be specified");
 
+            var hasFields = false;
             foreach (var f in fields)
+            {
+                hasFields = true;
                 if (string.IsNullOrEmpty(f.Key)) throw new ArgumentException("Fields must have non-empty names");
+            }
+
+            if(!hasFields) throw new ArgumentException("At least one field must be specified");
 
             if (tags != null)
                 foreach (var t in tags)
@@ -47,7 +53,7 @@ namespace InfluxDB.LineProtocol.Payload
             {
                 foreach (var t in Tags.OrderBy(t => t.Key))
                 {
-                    if (t.Value == null || t.Value == "")
+                    if (t.Value == null || t.Value == string.Empty)
                         continue;
 
                     textWriter.Write(',');
