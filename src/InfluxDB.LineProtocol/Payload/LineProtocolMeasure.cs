@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace InfluxDB.LineProtocol.Payload
@@ -73,7 +74,7 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        internal Func<T, string> Formatter { get; } = (Func<T, string>)(object)LineProtocolSyntax.GetFormatter(typeof(T));
+        public Action<T, TextWriter> FieldValueWriter { get; } = LineProtocolSyntax.GetWriter<T>();
 
         public ILineProtocolPoint AddPoint(T fieldValue, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
@@ -88,6 +89,10 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
+        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+
+        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T1, T2>(this, field1Value, field2Value, tagValues, utcTimestamp);
@@ -101,6 +106,12 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
+        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+
+        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+
+        public Action<T3, TextWriter> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
+
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T1, T2, T3>(this, field1Value, field2Value, field3Value, tagValues, utcTimestamp);
@@ -113,6 +124,14 @@ namespace InfluxDB.LineProtocol.Payload
             : base(measurement, new[] { field1Name, field2Name, field3Name }, tagNames)
         {
         }
+
+        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+
+        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+
+        public Action<T3, TextWriter> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
+
+        public Action<T4, TextWriter> Field4ValueWriter { get; } = LineProtocolSyntax.GetWriter<T4>();
 
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, T4 field4Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {

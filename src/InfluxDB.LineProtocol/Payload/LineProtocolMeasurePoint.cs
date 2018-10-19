@@ -93,12 +93,14 @@ namespace InfluxDB.LineProtocol.Payload
             IReadOnlyList<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
-            this._measure = measure ?? throw new ArgumentNullException(nameof(measure));
-            _fieldValue = fieldValue;
+            _measure = measure ?? throw new ArgumentNullException(nameof(measure));
             if (_measure.FieldNames.Length != 1)
                 throw new ArgumentException($"The number of field values specified (1) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
-            if ((_tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
-                throw new ArgumentException($"The number of tag values specified ({_tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
+
+            _fieldValue = fieldValue;
+
+            if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
+                throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
 
             this._tagValues = tagValues;
             this._utcTimestamp = utcTimestamp;
@@ -118,7 +120,7 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_fieldValue));
+            _measure.FieldValueWriter(_fieldValue, textWriter);
 
             if (_utcTimestamp != null)
             {
@@ -143,12 +145,14 @@ namespace InfluxDB.LineProtocol.Payload
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
-            _field1Value = field1Value;
-            _field2Value = field2Value;
             if (_measure.FieldNames.Length != 2)
                 throw new ArgumentException($"The number of field values specified (2) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
-            if ((_tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
-                throw new ArgumentException($"The number of tag values specified ({_tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
+
+            _field1Value = field1Value;
+            _field2Value = field2Value;
+
+            if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
+                throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
 
             this._tagValues = tagValues;
             this._utcTimestamp = utcTimestamp;
@@ -168,11 +172,11 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field1Value));
+            _measure.Field1ValueWriter(_field1Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[1]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field2Value));
+            _measure.Field2ValueWriter(_field2Value, textWriter);
 
             if (_utcTimestamp != null)
             {
@@ -199,13 +203,15 @@ namespace InfluxDB.LineProtocol.Payload
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
+            if (_measure.FieldNames.Length != 3)
+                throw new ArgumentException($"The number of field values specified (3) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
+
             _field1Value = field1Value;
             _field2Value = field2Value;
             _field3Value = field3Value;
-            if (_measure.FieldNames.Length != 3)
-                throw new ArgumentException($"The number of field values specified (3) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
-            if ((_tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
-                throw new ArgumentException($"The number of tag values specified ({_tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
+
+            if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
+                throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
 
             this._tagValues = tagValues;
             this._utcTimestamp = utcTimestamp;
@@ -225,15 +231,15 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field1Value));
+            _measure.Field1ValueWriter(_field1Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[1]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field2Value));
+            _measure.Field2ValueWriter(_field2Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[2]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field3Value));
+            _measure.Field3ValueWriter(_field3Value, textWriter);
 
             if (_utcTimestamp != null)
             {
@@ -262,14 +268,16 @@ namespace InfluxDB.LineProtocol.Payload
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
+            if (_measure.FieldNames.Length != 4)
+                throw new ArgumentException($"The number of field values specified (4) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
+
             _field1Value = field1Value;
             _field2Value = field2Value;
             _field3Value = field3Value;
             _field4Value = field4Value;
-            if (_measure.FieldNames.Length != 4)
-                throw new ArgumentException($"The number of field values specified (4) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
-            if ((_tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
-                throw new ArgumentException($"The number of tag values specified ({_tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
+
+            if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
+                throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
 
             this._tagValues = tagValues;
             this._utcTimestamp = utcTimestamp;
@@ -289,19 +297,19 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field1Value));
+            _measure.Field1ValueWriter(_field1Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[1]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field2Value));
+            _measure.Field2ValueWriter(_field2Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[2]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field3Value));
+            _measure.Field3ValueWriter(_field3Value, textWriter);
             textWriter.Write(';');
             textWriter.Write(_measure.FieldNames[3]);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(_field4Value));
+            _measure.Field4ValueWriter(_field4Value, textWriter);
 
             if (_utcTimestamp != null)
             {

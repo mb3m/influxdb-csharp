@@ -63,12 +63,10 @@ namespace Benchmark
             payload = new LineProtocolPayload();
             foreach (var (timestamp, colour, value) in data)
             {
-                payload.Add(new LineProtocolPoint(
+                payload.Add(new LineProtocolPoint<double>(
                     "example",
-                    new Dictionary<string, object>
-                    {
-                        {"value", value}
-                    },
+                    "value",
+                    value,
                     new Dictionary<string, string>
                     {
                         {"colour", colour}
@@ -80,6 +78,26 @@ namespace Benchmark
 
         [Benchmark]
         public object GenericPayload()
+        {
+            var writer = new StringWriter();
+            payload.Format(writer);
+            return writer.ToString();
+        }
+
+        [GlobalSetup(Target = nameof(GenericMeasurePayload))]
+        public void PrepareGenericMeasurePayload()
+        {
+            payload = new LineProtocolPayload();
+            var measure = new LineProtocolMeasure<double>("example", "value", new[] { "colour" });
+
+            foreach (var (timestamp, colour, value) in data)
+            {
+                payload.Add(measure.AddPoint(value, new[] { colour }, timestamp));
+            }
+        }
+
+        [Benchmark]
+        public object GenericMeasurePayload()
         {
             var writer = new StringWriter();
             payload.Format(writer);

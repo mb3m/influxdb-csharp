@@ -118,5 +118,19 @@ namespace Benchmark
 
             return payload;
         }
+
+        [Benchmark]
+        public object GenericMeasure2Payload()
+        {
+            var payload = new LineProtocolPayload();
+            var measure2 = new LineProtocolMeasure<double, int>("example", "value", "value2", new[] { "colour" });
+
+            foreach (var (timestamp, colour, value, value2) in data)
+            {
+                payload.Add(measure2.AddPoint(value, value2, new[] { colour }, timestamp));
+            }
+
+            return payload;
+        }
     }
 }
