@@ -12,7 +12,9 @@ namespace InfluxDB.LineProtocol.Payload
             if (string.IsNullOrEmpty(measurement)) throw new ArgumentException("A measurement name must be specified");
             if (fieldNames == null) throw new ArgumentException("At least one field must be specified");
 
-            FieldNames = fieldNames.ToArray();
+            FieldNames = fieldNames
+                .Select(t => LineProtocolSyntax.EscapeName(t))
+                .ToArray();
 
             if (FieldNames.Length == 0) throw new ArgumentException("At least one field must be specified");
 

@@ -30,22 +30,21 @@ namespace InfluxDB.LineProtocol.Payload
 
         internal static readonly Dictionary<Type, Delegate> Writers = new Dictionary<Type, Delegate>
         {
-            { typeof(sbyte), (Action<sbyte, TextWriter>)WriteSByte },
-            { typeof(byte), (Action<byte, TextWriter>)WriteByte },
-            { typeof(short), (Action<short, TextWriter>)WriteInt16 },
-            { typeof(ushort), (Action<ushort, TextWriter>)WriteUInt16 },
-            { typeof(int), (Action<int, TextWriter>)WriteInt32 },
-            { typeof(uint), (Action<uint, TextWriter>)WriteUInt32 },
-            { typeof(long), (Action<long, TextWriter>)WriteInt64 },
-            { typeof(ulong), (Action<ulong, TextWriter>)WriteUInt64 },
-            { typeof(float), (Action<float, TextWriter>)WriteSingle },
-            { typeof(double), (Action<double, TextWriter>)WriteDouble },
-            { typeof(decimal), (Action<decimal, TextWriter>)WriteDecimal},
-            { typeof(bool), (Action<bool, TextWriter>)WriteBoolean},
-            { typeof(TimeSpan), (Action<TimeSpan, TextWriter>)WriteTimeSpan},
-            { typeof(string), (Action<string, TextWriter>)WriteString },
-            { typeof(object), (Action<object, TextWriter>)WriteObject }
-
+            { typeof(sbyte), (Action<TextWriter, sbyte>)WriteSByte },
+            { typeof(byte), (Action<TextWriter, byte>)WriteByte },
+            { typeof(short), (Action<TextWriter, short>)WriteInt16 },
+            { typeof(ushort), (Action<TextWriter, ushort>)WriteUInt16 },
+            { typeof(int), (Action<TextWriter, int>)WriteInt32 },
+            { typeof(uint), (Action<TextWriter, uint>)WriteUInt32 },
+            { typeof(long), (Action<TextWriter, long>)WriteInt64 },
+            { typeof(ulong), (Action<TextWriter, ulong>)WriteUInt64 },
+            { typeof(float), (Action<TextWriter, float>)WriteSingle },
+            { typeof(double), (Action<TextWriter, double>)WriteDouble },
+            { typeof(decimal), (Action<TextWriter, decimal>)WriteDecimal},
+            { typeof(bool), (Action<TextWriter, bool>)WriteBoolean},
+            { typeof(TimeSpan), (Action<TextWriter, TimeSpan>)WriteTimeSpan},
+            { typeof(string), (Action<TextWriter, string>)WriteString },
+            { typeof(object), (Action<TextWriter, object>)WriteObject }
         };
 
         public static string EscapeName(string nameOrKey)
@@ -57,111 +56,28 @@ namespace InfluxDB.LineProtocol.Payload
                 .Replace(",", "\\,");
         }
 
-        public static Func<object, string> GetFormatter(Type type)
-        {
-            return Formatters.TryGetValue(type, out var formatter) ? formatter : FormatString;
-        }
-
-        public static Action<T, TextWriter> GetWriter<T>()
+        public static Action<TextWriter, T> GetWriter<T>()
         {
             if (!Writers.TryGetValue(typeof(T), out var action))
             {
                 // generate object method call
                 // Action<T, TextWriter> a = (p1, p2) => WriteObject((object)p1, p2);
-                var param1 = Expression.Parameter(typeof(T));
-                var param2 = Expression.Parameter(typeof(TextWriter));
+                // Action<TextWriter, T> a = (p1, p2) => WriteObject(p1, (object)p2);
+                var param2 = Expression.Parameter(typeof(T));
+                var param1 = Expression.Parameter(typeof(TextWriter));
                 var convert = Expression.Convert(param1, typeof(object));
-                var call = Expression.Call(typeof(LineProtocolSyntax).GetTypeInfo().GetMethod("WriteObject"), convert, param2);
-                action = Expression.Lambda<Action<T, TextWriter>>(call, param1, param2).Compile();
+                var call = Expression.Call(typeof(LineProtocolSyntax).GetTypeInfo().GetMethod(nameof(WriteObject)), convert, param2);
+                action = Expression.Lambda<Action<TextWriter, T>>(call, param1, param2).Compile();
                 Writers[typeof(T)] = action;
             }
 
-            return (Action<T, TextWriter>)action;
+            return (Action<TextWriter, T>)action;
         }
 
-        public static void WriteObject(object value, TextWriter writer) => WriteString(value?.ToString() ?? string.Empty, writer);
-
-        public static void WriteSByte(sbyte value, TextWriter writer)
+        public static void WriteObject(TextWriter writer, object value)
         {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteByte(byte value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteInt16(short value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteUInt16(ushort value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteInt32(int value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteUInt32(uint value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteInt64(long value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteUInt64(ulong value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-            writer.Write('i');
-        }
-
-        public static void WriteSingle(float value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-        }
-
-        public static void WriteDouble(double value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-        }
-
-        public static void WriteDecimal(decimal value, TextWriter writer)
-        {
-            writer.Write(value.ToString(CultureInfo.InvariantCulture));
-        }
-
-        public static void WriteBoolean(bool value, TextWriter writer)
-        {
-            writer.Write(value ? 't' : 'f');
-        }
-
-        public static void WriteTimeSpan(TimeSpan value, TextWriter writer)
-        {
-            writer.Write(value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
-        }
-
-        public static void WriteString(string value, TextWriter writer)
-        {
-            writer.Write('"');
-            if (value.IndexOf('"') == -1)
-                writer.Write(value);
-            else
-                writer.Write(value.Replace("\"", "\\\""));
-            writer.Write('"');
+            value = value ?? string.Empty;
+            WriteString(writer, value?.ToString() ?? string.Empty);
         }
 
         public static string FormatValue(object value)
@@ -171,6 +87,89 @@ namespace InfluxDB.LineProtocol.Payload
             if (Formatters.TryGetValue(v.GetType(), out format))
                 return format(v);
             return FormatString(v.ToString());
+        }
+
+        public static void WriteSByte(TextWriter writer, sbyte value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteByte(TextWriter writer, byte value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteInt16(TextWriter writer, short value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteUInt16(TextWriter writer, ushort value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteInt32(TextWriter writer, int value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteUInt32(TextWriter writer, uint value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteInt64(TextWriter writer, long value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteUInt64(TextWriter writer, ulong value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+            writer.Write('i');
+        }
+
+        public static void WriteSingle(TextWriter writer, float value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void WriteDouble(TextWriter writer, double value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void WriteDecimal(TextWriter writer, decimal value)
+        {
+            writer.Write(value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void WriteBoolean(TextWriter writer, bool value)
+        {
+            writer.Write(value ? 't' : 'f');
+        }
+
+        public static void WriteTimeSpan(TextWriter writer, TimeSpan value)
+        {
+            writer.Write(value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+        }
+
+        public static void WriteString(TextWriter writer, string value)
+        {
+            writer.Write('"');
+            if (value.IndexOf('"') == -1)
+                writer.Write(value);
+            else
+                writer.Write(value.Replace("\"", "\\\""));
+            writer.Write('"');
         }
 
         static string FormatInteger(object i)
@@ -200,10 +199,9 @@ namespace InfluxDB.LineProtocol.Payload
             return "\"" + s.Replace("\"", "\\\"") + "\"";
         }
 
-        public static string FormatTimestamp(DateTime utcTimestamp)
+        public static long AsTimestamp(DateTime utcTimestamp)
         {
-            var t = utcTimestamp - Origin;
-            return (t.Ticks * 100L).ToString(CultureInfo.InvariantCulture);
+            return (utcTimestamp - Origin).Ticks * 100L;
         }
     }
 }

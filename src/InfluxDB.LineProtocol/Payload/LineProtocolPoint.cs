@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace InfluxDB.LineProtocol.Payload
 {
@@ -10,10 +9,10 @@ namespace InfluxDB.LineProtocol.Payload
         void Format(TextWriter textWriter);
     }
 
-    public class LineProtocolPoint<T, K> : LineProtocolPointBase, ILineProtocolPoint
+    public class LineProtocolPoint<T, K> : ILineProtocolPoint
     {
-        private static readonly Func<object, string> Formatter1 = LineProtocolSyntax.GetFormatter(typeof(T));
-        private static readonly Func<object, string> Formatter2 = LineProtocolSyntax.GetFormatter(typeof(K));
+        private static readonly Action<TextWriter, T> Writer1 = LineProtocolSyntax.GetWriter<T>();
+        private static readonly Action<TextWriter, K> Writer2 = LineProtocolSyntax.GetWriter<K>();
 
         public string Measurement { get; }
         public string Field1Name { get; }
@@ -56,32 +55,27 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(Measurement));
+            textWriter.WriteLPNameEscaped(Measurement);
 
-            if (Tags != null)
-            {
-                FormatTags(Tags, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(Measurement);
+            textWriter.WriteLPTags(Tags);
 
             textWriter.Write(' ');
-            textWriter.Write(LineProtocolSyntax.EscapeName(Field1Name));
+            textWriter.WriteLPNameEscaped(Field1Name);
             textWriter.Write('=');
-            textWriter.Write(Formatter1(Field1Value));
+            Writer1(textWriter, Field1Value);
             textWriter.Write(',');
-            textWriter.Write(LineProtocolSyntax.EscapeName(Field2Name));
+            textWriter.WriteLPNameEscaped(Field2Name);
             textWriter.Write('=');
-            textWriter.Write(LineProtocolSyntax.FormatValue(Field2Value));
+            Writer2(textWriter, Field2Value);
 
-            if (UtcTimestamp != null)
-            {
-                WriteUtcTimestamp(UtcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(UtcTimestamp);
         }
     }
 
-    public class LineProtocolPoint<T> : LineProtocolPointBase, ILineProtocolPoint
+    public class LineProtocolPoint<T> : ILineProtocolPoint
     {
-        private static readonly Func<object, string> Formatter = LineProtocolSyntax.GetFormatter(typeof(T));
+        private static readonly Action<TextWriter, T> Writer = LineProtocolSyntax.GetWriter<T>();
 
         public string Measurement { get; }
         public string FieldName { get; }
@@ -117,26 +111,19 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(Measurement));
-
-            if (Tags != null)
-            {
-                FormatTags(Tags, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(Measurement);
+            textWriter.WriteLPTags(Tags);
 
             textWriter.Write(' ');
             textWriter.Write(LineProtocolSyntax.EscapeName(FieldName));
             textWriter.Write('=');
-            textWriter.Write(Formatter(FieldValue));
+            Writer(textWriter, FieldValue);
 
-            if (UtcTimestamp != null)
-            {
-                WriteUtcTimestamp(UtcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(UtcTimestamp);
         }
     }
 
-    public class LineProtocolPoint : LineProtocolPointBase, ILineProtocolPoint
+    public class LineProtocolPoint : ILineProtocolPoint
     {
         public string Measurement { get; }
         public IEnumerable<KeyValuePair<string, object>> Fields { get; }
@@ -178,50 +165,20 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(Measurement));
-
-            if (Tags != null)
-            {
-                FormatTags(Tags, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(Measurement);
+            textWriter.WriteLPTags(Tags);
 
             var fieldDelim = ' ';
             foreach (var f in Fields)
             {
                 textWriter.Write(fieldDelim);
                 fieldDelim = ',';
-                textWriter.Write(LineProtocolSyntax.EscapeName(f.Key));
+                textWriter.WriteLPNameEscaped(f.Key);
                 textWriter.Write('=');
-                textWriter.Write(LineProtocolSyntax.FormatValue(f.Value));
+                textWriter.WriteLPValue(f.Value);
             }
 
-            if (UtcTimestamp != null)
-            {
-                WriteUtcTimestamp(UtcTimestamp.Value, textWriter);
-            }
-        }
-    }
-
-    public class LineProtocolPointBase
-    {
-        protected void FormatTags(IEnumerable<KeyValuePair<string, string>> tags, TextWriter textWriter)
-        {
-            foreach (var t in tags.OrderBy(t => t.Key))
-            {
-                if (t.Value == null || t.Value == string.Empty)
-                    continue;
-
-                textWriter.Write(',');
-                textWriter.Write(LineProtocolSyntax.EscapeName(t.Key));
-                textWriter.Write('=');
-                textWriter.Write(LineProtocolSyntax.EscapeName(t.Value));
-            }
-        }
-
-        protected void WriteUtcTimestamp(DateTime utcTimestamp, TextWriter textWriter)
-        {
-            textWriter.Write(' ');
-            textWriter.Write(LineProtocolSyntax.FormatTimestamp(utcTimestamp));
+            textWriter.WriteLPTimestamp(UtcTimestamp);
         }
     }
 }

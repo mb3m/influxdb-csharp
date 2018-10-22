@@ -6,7 +6,7 @@ namespace InfluxDB.LineProtocol.Payload
 {
     public class LineProtocolMeasurePointBase : LineProtocolPointBase
     {
-        protected void FormatTags(string[] tagNames, IEnumerable<string> tagValues, TextWriter textWriter)
+        protected static void WriteTags(string[] tagNames, IEnumerable<string> tagValues, TextWriter textWriter)
         {
             var i = 0;
             foreach (var tagValue in tagValues)
@@ -14,9 +14,9 @@ namespace InfluxDB.LineProtocol.Payload
                 if (!string.IsNullOrEmpty(tagValue))
                 {
                     textWriter.Write(',');
-                    textWriter.Write(LineProtocolSyntax.EscapeName(tagNames[i]));
+                    textWriter.Write(tagNames[i]); // no need to escape tag names, they are already escaped on LineProtocolMeasureBase ctor
                     textWriter.Write('=');
-                    textWriter.Write(LineProtocolSyntax.EscapeName(tagValue));
+                    textWriter.WriteLPNameEscaped(tagValue);
                 }
 
                 i++;
@@ -53,30 +53,10 @@ namespace InfluxDB.LineProtocol.Payload
         public void Format(TextWriter textWriter)
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
-            textWriter.Write(LineProtocolSyntax.EscapeName(_measure.Measurement));
-
-            if (_measure.TagNames != null)
-            {
-                FormatTags(_measure.TagNames, _tagValues, textWriter);
-            }
-
-            var fieldDelim = ' ';
-            var i = 0;
-            foreach (var f in _fieldValues)
-            {
-                textWriter.Write(fieldDelim);
-                fieldDelim = ',';
-                textWriter.Write(LineProtocolSyntax.EscapeName(_measure.FieldNames[i]));
-                textWriter.Write('=');
-                textWriter.Write(LineProtocolSyntax.FormatValue(f));
-
-                i++;
-            }
-
-            if (_utcTimestamp != null)
-            {
-                WriteUtcTimestamp(_utcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(_measure.Measurement);
+            textWriter.WriteLPTags(_measure.TagNames, _tagValues);
+            textWriter.WriteLPFields(_measure.FieldNames, _fieldValues);
+            textWriter.WriteLPTimestamp(_utcTimestamp);
         }
     }
 
@@ -102,30 +82,23 @@ namespace InfluxDB.LineProtocol.Payload
             if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
                 throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
 
-            this._tagValues = tagValues;
-            this._utcTimestamp = utcTimestamp;
+            _tagValues = tagValues;
+            _utcTimestamp = utcTimestamp;
         }
 
         public void Format(TextWriter textWriter)
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(_measure.Measurement));
-
-            if (_measure.TagNames != null)
-            {
-                FormatTags(_measure.TagNames, _tagValues, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(_measure.Measurement);
+            textWriter.WriteLPTags(_measure.TagNames, _tagValues);
 
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
             textWriter.Write('=');
             _measure.FieldValueWriter(_fieldValue, textWriter);
 
-            if (_utcTimestamp != null)
-            {
-                WriteUtcTimestamp(_utcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(_utcTimestamp);
         }
     }
 
@@ -162,12 +135,8 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(_measure.Measurement));
-
-            if (_measure.TagNames != null)
-            {
-                FormatTags(_measure.TagNames, _tagValues, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(_measure.Measurement);
+            textWriter.WriteLPTags(_measure.TagNames, _tagValues);
 
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
@@ -178,10 +147,7 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write('=');
             _measure.Field2ValueWriter(_field2Value, textWriter);
 
-            if (_utcTimestamp != null)
-            {
-                WriteUtcTimestamp(_utcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(_utcTimestamp);
         }
     }
 
@@ -221,12 +187,8 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(_measure.Measurement));
-
-            if (_measure.TagNames != null)
-            {
-                FormatTags(_measure.TagNames, _tagValues, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(_measure.Measurement);
+            textWriter.WriteLPTags(_measure.TagNames, _tagValues);
 
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
@@ -241,10 +203,7 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write('=');
             _measure.Field3ValueWriter(_field3Value, textWriter);
 
-            if (_utcTimestamp != null)
-            {
-                WriteUtcTimestamp(_utcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(_utcTimestamp);
         }
     }
 
@@ -287,12 +246,8 @@ namespace InfluxDB.LineProtocol.Payload
         {
             if (textWriter == null) throw new ArgumentNullException(nameof(textWriter));
 
-            textWriter.Write(LineProtocolSyntax.EscapeName(_measure.Measurement));
-
-            if (_measure.TagNames != null)
-            {
-                FormatTags(_measure.TagNames, _tagValues, textWriter);
-            }
+            textWriter.WriteLPNameEscaped(_measure.Measurement);
+            textWriter.WriteLPTags(_measure.TagNames, _tagValues);
 
             textWriter.Write(' ');
             textWriter.Write(_measure.FieldNames[0]);
@@ -311,10 +266,7 @@ namespace InfluxDB.LineProtocol.Payload
             textWriter.Write('=');
             _measure.Field4ValueWriter(_field4Value, textWriter);
 
-            if (_utcTimestamp != null)
-            {
-                WriteUtcTimestamp(_utcTimestamp.Value, textWriter);
-            }
+            textWriter.WriteLPTimestamp(_utcTimestamp);
         }
     }
 }
