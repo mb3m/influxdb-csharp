@@ -70,7 +70,7 @@ namespace InfluxDB.LineProtocol.Payload
                 fieldDelim = ',';
                 @this.Write(names[i]);// no need to escape tag names, they are already escaped in LineProtocolMeasureBase ctor
                 @this.Write('=');
-                @this.Write(LineProtocolSyntax.FormatValue(value));
+                @this.WriteLPValue(value);
 
                 i++;
             }

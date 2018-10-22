@@ -13,7 +13,7 @@ namespace InfluxDB.LineProtocol.Tests
             var writer = LineProtocolSyntax.GetWriter<int>();
             var stringWriter = new StringWriter();
 
-            writer(0, stringWriter);
+            writer(stringWriter, 0);
 
             Assert.Equal("0i", stringWriter.ToString());
         }
@@ -24,10 +24,10 @@ namespace InfluxDB.LineProtocol.Tests
             var writer = LineProtocolSyntax.GetWriter<Guid>();
             var stringWriter = new StringWriter();
 
-            writer(Guid.Empty, stringWriter);
+            writer(stringWriter, Guid.Empty);
 
             Assert.Equal($"\"{Guid.Empty}\"", stringWriter.ToString());
-            Assert.True(LineProtocolSyntax.Writers.ContainsKey(typeof(Guid)));
+            Assert.True(LineProtocolSyntax.CustomWriters.ContainsKey(typeof(Guid)));
         }
 
         [Fact]
@@ -36,8 +36,8 @@ namespace InfluxDB.LineProtocol.Tests
             var writer = LineProtocolSyntax.GetWriter<bool>();
             var stringWriter = new StringWriter();
 
-            writer(true, stringWriter);
-            writer(false, stringWriter);
+            writer(stringWriter, true);
+            writer(stringWriter, false);
 
             Assert.Equal("tf", stringWriter.ToString());
         }
@@ -48,21 +48,10 @@ namespace InfluxDB.LineProtocol.Tests
             var writer = LineProtocolSyntax.GetWriter<string>();
             var stringWriter = new StringWriter();
 
-            writer("Hello \"World\"!", stringWriter);
+            writer(stringWriter, "Hello \"World\"!");
 
             // Hello "World"! => "Hello \"World\"!"
             Assert.Equal("\"Hello \\\"World\\\"!\"", stringWriter.ToString());
-        }
-
-        [Fact]
-        public void WriteTimeSpan()
-        {
-            var writer = LineProtocolSyntax.GetWriter<TimeSpan>();
-            var stringWriter = new StringWriter();
-
-            writer(TimeSpan.FromSeconds(10), stringWriter);
-            
-            Assert.Equal("10000", stringWriter.ToString());
         }
     }
 }

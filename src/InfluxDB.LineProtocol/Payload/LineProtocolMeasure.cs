@@ -7,9 +7,11 @@ namespace InfluxDB.LineProtocol.Payload
 {
     public abstract class LineProtocolMeasureBase
     {
-        protected LineProtocolMeasureBase(string measurement, IEnumerable<string> fieldNames, IEnumerable<string> tagNames = null)
+        protected LineProtocolMeasureBase(string measurement, IEnumerable<string> fieldNames, IEnumerable<string> tagNames)
         {
             if (string.IsNullOrEmpty(measurement)) throw new ArgumentException("A measurement name must be specified");
+            Measurement = measurement;
+
             if (fieldNames == null) throw new ArgumentException("At least one field must be specified");
 
             FieldNames = fieldNames
@@ -18,23 +20,38 @@ namespace InfluxDB.LineProtocol.Payload
 
             if (FieldNames.Length == 0) throw new ArgumentException("At least one field must be specified");
 
-            TagNames = tagNames
-                ?.OrderBy(t => t)
-                ?.Select(t => LineProtocolSyntax.EscapeName(t))
-                ?.ToArray();
-
             if (tagNames != null)
+            {
                 foreach (var t in tagNames)
+                {
                     if (string.IsNullOrEmpty(t)) throw new ArgumentException("Tags must have non-empty names");
+                }
 
-            Measurement = measurement;
+                TagNames = tagNames
+                    .OrderBy(t => t)
+                    .Select(t => LineProtocolSyntax.EscapeName(t))
+                    .ToArray();
+            }
         }
 
-        public string[] FieldNames { get; }
+        public string Measurement { get; }
 
         public string[] TagNames { get; }
 
-        public string Measurement { get; }
+        public string[] FieldNames { get; }
+    }
+
+    public class LineProtocolMeasure : LineProtocolMeasureBase
+    {
+        public LineProtocolMeasure(string measurement, IEnumerable<string> fieldNames, IEnumerable<string> tagNames = null)
+            : base(measurement, fieldNames, tagNames)
+        {
+        }
+
+        public ILineProtocolPoint AddPoint(IReadOnlyList<object> fieldValues, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        {
+            return new LineProtocolMeasurePoint(this, fieldValues, tagValues, utcTimestamp);
+        }
 
         public static LineProtocolMeasure<T> Create<T>(string measurement, string fieldName, IEnumerable<string> tagNames = null)
         {
@@ -56,18 +73,6 @@ namespace InfluxDB.LineProtocol.Payload
             return new LineProtocolMeasure<T1, T2, T3, T4>(measurement, field1Name, field2Name, field3Name, field4Name, tagNames);
         }
     }
-    public class LineProtocolMeasure : LineProtocolMeasureBase
-    {
-        public LineProtocolMeasure(string measurement, IEnumerable<string> fieldNames, IEnumerable<string> tagNames = null)
-            : base(measurement, fieldNames, tagNames)
-        {
-        }
-
-        public ILineProtocolPoint AddPoint(IReadOnlyList<object> fieldValues, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
-        {
-            return new LineProtocolMeasurePoint(this, fieldValues, tagValues, utcTimestamp);
-        }
-    }
 
     public class LineProtocolMeasure<T> : LineProtocolMeasureBase
     {
@@ -76,7 +81,7 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        public Action<T, TextWriter> FieldValueWriter { get; } = LineProtocolSyntax.GetWriter<T>();
+        public Action<TextWriter, T> FieldValueWriter { get; } = LineProtocolSyntax.GetWriter<T>();
 
         public ILineProtocolPoint AddPoint(T fieldValue, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
@@ -91,9 +96,9 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+        public Action<TextWriter, T1> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
 
-        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+        public Action<TextWriter, T2> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
 
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
@@ -108,11 +113,11 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+        public Action<TextWriter, T1> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
 
-        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+        public Action<TextWriter, T2> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
 
-        public Action<T3, TextWriter> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
+        public Action<TextWriter, T3> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
 
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
@@ -127,13 +132,13 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        public Action<T1, TextWriter> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
+        public Action<TextWriter, T1> Field1ValueWriter { get; } = LineProtocolSyntax.GetWriter<T1>();
 
-        public Action<T2, TextWriter> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
+        public Action<TextWriter, T2> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
 
-        public Action<T3, TextWriter> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
+        public Action<TextWriter, T3> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
 
-        public Action<T4, TextWriter> Field4ValueWriter { get; } = LineProtocolSyntax.GetWriter<T4>();
+        public Action<TextWriter, T4> Field4ValueWriter { get; } = LineProtocolSyntax.GetWriter<T4>();
 
         public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, T4 field4Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
         {
