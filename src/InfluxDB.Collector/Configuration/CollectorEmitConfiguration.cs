@@ -13,6 +13,6 @@ namespace InfluxDB.Collector.Configuration
             return InfluxDB(new Uri(serverBaseAddress), database, username, password);
         }
 
-        public abstract CollectorConfiguration Emitter(Action<IEnumerable<PointData>> emitter);
+        public abstract CollectorConfiguration Emitter(Action<IEnumerable<IPointData>> emitter);
     }
 }

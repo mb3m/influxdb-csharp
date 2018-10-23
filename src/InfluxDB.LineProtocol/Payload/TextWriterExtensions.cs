@@ -25,31 +25,44 @@ namespace InfluxDB.LineProtocol.Payload
             }
         }
 
+        /// <summary>
+        /// Write a collection of tags using the line protocol format.
+        /// This methods takes care of ordering the tags by names, and escaping names and values.
+        /// </summary>
         public static void WriteLPTags(this TextWriter @this, IEnumerable<KeyValuePair<string, string>> tags)
         {
             if (tags == null) return;
 
             foreach (var t in tags.OrderBy(t => t.Key))
             {
-                if (t.Value == null || t.Value == string.Empty)
-                    continue;
-
-                @this.Write(',');
-                @this.WriteLPNameEscaped(t.Key);
-                @this.Write('=');
-                @this.WriteLPNameEscaped(t.Value);
+                if (!string.IsNullOrEmpty(t.Value))
+                {
+                    @this.Write(',');
+                    @this.WriteLPNameEscaped(t.Key);
+                    @this.Write('=');
+                    @this.WriteLPNameEscaped(t.Value);
+                }
             }
         }
 
+        /// <summary>
+        /// Write a collection of tags using the line protocol format.
+        /// This methods expects that the names are already escaped and ordered.
+        /// It takes care of escaping tag values.
+        /// </summary>
         public static void WriteLPTags(this TextWriter @this, string[] tagNames, IEnumerable<string> tagValues)
         {
             if (tagNames == null) return;
 
             var i = 0;
+
             foreach (var tagValue in tagValues)
             {
                 if (!string.IsNullOrEmpty(tagValue))
                 {
+                    // we stop as soon as we do not have any name left, ignoring all remaining tag values
+                    if (i >= tagNames.Length) return;
+
                     @this.Write(',');
                     @this.Write(tagNames[i]); // no need to escape tag names, they are already escaped in LineProtocolMeasureBase ctor
                     @this.Write('=');
@@ -60,15 +73,23 @@ namespace InfluxDB.LineProtocol.Payload
             }
         }
 
-        public static void WriteLPFields(this TextWriter @this, string[] names, IReadOnlyCollection<object> values)
+        /// <summary>
+        /// Write a collection of fields using the line protocol format.
+        /// This method expects that the names are already escaped.
+        /// </summary>
+        public static void WriteLPFields(this TextWriter @this, string[] names, IEnumerable<object> values)
         {
             var fieldDelim = ' ';
             var i = 0;
+
             foreach (var value in values)
             {
+                // we stop as soon as we do not have any name left, ignoring all remaining field values
+                if (i >= names.Length) return;
+
                 @this.Write(fieldDelim);
                 fieldDelim = ',';
-                @this.Write(names[i]);// no need to escape tag names, they are already escaped in LineProtocolMeasureBase ctor
+                @this.Write(names[i]);// no need to escape field names, they are already escaped in LineProtocolMeasureBase ctor
                 @this.Write('=');
                 @this.WriteLPValue(value);
 

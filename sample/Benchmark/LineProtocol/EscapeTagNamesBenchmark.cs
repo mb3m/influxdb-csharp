@@ -1,10 +1,10 @@
 using System.IO;
 using BenchmarkDotNet.Attributes;
 
-namespace Benchmark
+namespace InfluxDB.LineProtocol
 {
     [MemoryDiagnoser]
-    public class EscapeTagNames
+    public class EscapeTagNamesBenchmark
     {
         private const int N = 500;
 

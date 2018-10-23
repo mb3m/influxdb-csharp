@@ -10,7 +10,7 @@ namespace InfluxDB.Collector.Configuration
     class PipelinedCollectorEmitConfiguration : CollectorEmitConfiguration
     {
         readonly CollectorConfiguration _configuration;
-        readonly List<Action<IEnumerable<PointData>>> _emitters = new List<Action<IEnumerable<PointData>>>();
+        readonly List<Action<IEnumerable<IPointData>>> _emitters = new List<Action<IEnumerable<IPointData>>>();
         private ILineProtocolClient _client;
 
         public PipelinedCollectorEmitConfiguration(
@@ -29,7 +29,7 @@ namespace InfluxDB.Collector.Configuration
             return _configuration;
         }
 
-        public override CollectorConfiguration Emitter(Action<IEnumerable<PointData>> emitter)
+        public override CollectorConfiguration Emitter(Action<IEnumerable<IPointData>> emitter)
         {
             if (emitter == null) throw new ArgumentNullException(nameof(emitter));
             _emitters.Add(emitter);
@@ -64,7 +64,6 @@ namespace InfluxDB.Collector.Configuration
             {
                 result.Add(new DelegateEmitter(emitter));
             }
-
 
             // perfs-short-circuit: no need for an aggregator if there is only one emitter
             if (result.Count == 1)

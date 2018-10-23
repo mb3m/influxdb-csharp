@@ -21,23 +21,23 @@ namespace InfluxDB.Collector.Pipeline.Emit
              // This needs to ensure outstanding operations have completed
         }
 
-        public void Emit(PointData point)
+        public void Emit(IPointData point)
         {
             var payload = new LineProtocolPayload();
-            payload.Add(new LineProtocolPoint(point.Measurement, point.Fields, point.Tags, point.UtcTimestamp));
+            payload.Add(point.AsLineProtocolPoint());
 
             var influxResult = _client.WriteAsync(payload).Result;
             if (!influxResult.Success)
                 CollectorLog.ReportError(influxResult.ErrorMessage, null);
         }
 
-        public void Emit(IEnumerable<PointData> points)
+        public void Emit(IEnumerable<IPointData> points)
         {
             var payload = new LineProtocolPayload();
 
             foreach (var point in points)
             {
-                payload.Add(new LineProtocolPoint(point.Measurement, point.Fields, point.Tags, point.UtcTimestamp));
+                payload.Add(point.AsLineProtocolPoint());
             }
 
             var influxResult = _client.WriteAsync(payload).Result;

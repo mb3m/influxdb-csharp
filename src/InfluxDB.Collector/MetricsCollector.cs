@@ -9,6 +9,13 @@ namespace InfluxDB.Collector
     {
         readonly Util.ITimestampSource _timestampSource = new Util.PseudoHighResTimestampSource();
 
+        public Counter CreateCounter(string name, IReadOnlyDictionary<string, string> tags = null)
+        {
+            var counter = new Counter(name);
+            RegisterMeasurement(counter);
+            return counter;
+        }
+
         public void Increment(string measurement, long count = 1, IReadOnlyDictionary<string, string> tags = null)
         {
             Write(measurement, new Dictionary<string, object> { { "count", count } }, tags);
@@ -17,6 +24,18 @@ namespace InfluxDB.Collector
         public void Measure(string measurement, object value, IReadOnlyDictionary<string, string> tags = null)
         {
             Write(measurement, new Dictionary<string, object> { { "value", value } }, tags);
+        }
+
+        public void Increment(Counter counter, long count = 1)
+        {
+            counter.Increment(count);
+            Emit(counter.Emit(_timestampSource.GetUtcNow()));
+        }
+
+        public void Increment(Faceted3Counter counter, string facet, long count = 1)
+        {
+            counter.Increment(facet, count);
+            Emit(counter.Emit(_timestampSource.GetUtcNow()));
         }
 
         public IDisposable Time(string measurement, IReadOnlyDictionary<string, string> tags = null)
@@ -40,8 +59,7 @@ namespace InfluxDB.Collector
         {
             try
             {
-                var point = new PointData(measurement, fields, tags, timestamp ?? _timestampSource.GetUtcNow());
-                Emit(new[] { point });
+                Emit(new PointData(measurement, fields, tags, timestamp ?? _timestampSource.GetUtcNow()));
             }
             catch (Exception ex)
             {
@@ -49,21 +67,23 @@ namespace InfluxDB.Collector
             }
         }
 
-        void IPointEmitter.Emit(PointData point)
+        void IPointEmitter.Emit(IPointData point)
         {
             Emit(point);
         }
 
-        void IPointEmitter.Emit(IEnumerable<PointData> points)
+        void IPointEmitter.Emit(IEnumerable<IPointData> points)
         {
             Emit(points);
         }
 
-        protected virtual void Emit(PointData point) 
+        protected virtual void Emit(IPointData point)
         {
             Emit(new[] { point });
         }
 
-        protected abstract void Emit(IEnumerable<PointData> points);
+        protected abstract void RegisterMeasurement(IMeasurement measurement);
+
+        protected abstract void Emit(IEnumerable<IPointData> points);
     }
 }

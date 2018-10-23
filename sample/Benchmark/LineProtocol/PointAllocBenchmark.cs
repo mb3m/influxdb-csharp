@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Benchmark
+namespace InfluxDB.LineProtocol
 {
     /// <summary>
     /// This benchmark examines the payload construction and allocations.
     /// </summary>
     [MemoryDiagnoser]
-    public class LineProtocolPointAllocBenchmark
+    public class PointAllocBenchmark
     {
         private const int N = 500;
 
@@ -18,7 +18,7 @@ namespace Benchmark
 
         private readonly (DateTime timestamp, string colour, double value, int value2)[] data;
 
-        public LineProtocolPointAllocBenchmark()
+        public PointAllocBenchmark()
         {
             var random = new Random(755);
             var now = DateTime.UtcNow;

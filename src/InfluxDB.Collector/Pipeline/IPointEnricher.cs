@@ -2,6 +2,6 @@
 {
     interface IPointEnricher
     {
-        void Enrich(PointData pointData);
+        void Enrich(IMeasurement measure);
     }
 }

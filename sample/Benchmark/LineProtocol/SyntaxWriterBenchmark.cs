@@ -3,9 +3,8 @@ using InfluxDB.LineProtocol.Payload;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 
-namespace Benchmark
+namespace InfluxDB.LineProtocol
 {
     /// <summary>
     /// This benchmark compare the different methods available to serialize field values.
@@ -39,10 +38,10 @@ namespace Benchmark
             {
                 foreach (var value in values)
                 {
-                    writer.Write(LineProtocolSyntax.FormatValue(value.Value1));
-                    writer.Write(LineProtocolSyntax.FormatValue(value.Value2));
-                    writer.Write(LineProtocolSyntax.FormatValue(value.Value3));
-                    writer.Write(LineProtocolSyntax.FormatValue(value.Value4));
+                    writer.Write(LineProtocolSyntaxLegacy.FormatValue(value.Value1));
+                    writer.Write(LineProtocolSyntaxLegacy.FormatValue(value.Value2));
+                    writer.Write(LineProtocolSyntaxLegacy.FormatValue(value.Value3));
+                    writer.Write(LineProtocolSyntaxLegacy.FormatValue(value.Value4));
                 }
 
                 return writer.ToString();

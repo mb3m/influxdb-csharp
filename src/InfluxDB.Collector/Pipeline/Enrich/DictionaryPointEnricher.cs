@@ -11,13 +11,13 @@ namespace InfluxDB.Collector.Pipeline.Enrich
             _tags = tags;
         }
 
-        public void Enrich(PointData point)
+        public void Enrich(IMeasurement measure)
         {
-            point.Tags = point.Tags ?? new Dictionary<string, string>();
+            measure.Tags = measure.Tags ?? new Dictionary<string, string>();
             foreach (var tag in _tags)
             {
-                if (!point.Tags.ContainsKey(tag.Key))
-                    point.Tags.Add(tag.Key, tag.Value);
+                if (!measure.Tags.ContainsKey(tag.Key))
+                    measure.Tags.Add(tag.Key, tag.Value);
             }
         }
     }

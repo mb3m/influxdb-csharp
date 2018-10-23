@@ -1,8 +1,7 @@
 ﻿using System;
-using InfluxDB.Collector.Diagnostics;
 using Xunit;
 
-namespace InfluxDB.LineProtocol.Tests.Collector
+namespace InfluxDB.Collector.Diagnostics
 {
     public class CollectorLogTests : IDisposable
     {

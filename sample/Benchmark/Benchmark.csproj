@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
-    <AssemblyName>Sample</AssemblyName>
+    <AssemblyName>Benchmark</AssemblyName>
     <PackageId>Sample</PackageId>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <RootNamespace>InfluxDB</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

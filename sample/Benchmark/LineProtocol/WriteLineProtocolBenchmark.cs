@@ -7,10 +7,10 @@ using BenchmarkDotNet.Attributes;
 using InfluxDB.LineProtocol;
 using InfluxDB.LineProtocol.Payload;
 
-namespace Benchmark
+namespace InfluxDB.LineProtocol
 {
     [MemoryDiagnoser]
-    public class WriteLineProtocol
+    public class WriteLineProtocolBenchmark
     {
         private const int N = 500;
 
@@ -18,7 +18,7 @@ namespace Benchmark
 
         private readonly (DateTime timestamp, string colour, double value)[] data;
 
-        public WriteLineProtocol()
+        public WriteLineProtocolBenchmark()
         {
             var random = new Random(755);
             var now = DateTime.UtcNow;

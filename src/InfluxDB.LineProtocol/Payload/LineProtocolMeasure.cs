@@ -5,8 +5,14 @@ using System.Linq;
 
 namespace InfluxDB.LineProtocol.Payload
 {
+    /// <summary>
+    /// Represents basic informations shared between all line protocol measures.
+    /// </summary>
     public abstract class LineProtocolMeasureBase
     {
+        /// <summary>
+        /// Initialize a new instance of <see cref="LineProtocolMeasureBase"/> with the specified informations shared among all points.
+        /// </summary>
         protected LineProtocolMeasureBase(string measurement, IEnumerable<string> fieldNames, IEnumerable<string> tagNames)
         {
             if (string.IsNullOrEmpty(measurement)) throw new ArgumentException("A measurement name must be specified");
@@ -34,10 +40,19 @@ namespace InfluxDB.LineProtocol.Payload
             }
         }
 
+        /// <summary>
+        /// Gets the measure name.
+        /// </summary>
         public string Measurement { get; }
 
+        /// <summary>
+        /// Gets the list of tag names declared for this measure, ordered by name and escaped according to the line protocol format.
+        /// </summary>
         public string[] TagNames { get; }
 
+        /// <summary>
+        /// Gets the list of field names declared for this measure, escaped according to the line protocol format.
+        /// </summary>
         public string[] FieldNames { get; }
     }
 
@@ -48,7 +63,7 @@ namespace InfluxDB.LineProtocol.Payload
         {
         }
 
-        public ILineProtocolPoint AddPoint(IReadOnlyList<object> fieldValues, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        public ILineProtocolPoint AddPoint(IReadOnlyCollection<object> fieldValues, ICollection<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint(this, fieldValues, tagValues, utcTimestamp);
         }
@@ -83,7 +98,7 @@ namespace InfluxDB.LineProtocol.Payload
 
         public Action<TextWriter, T> FieldValueWriter { get; } = LineProtocolSyntax.GetWriter<T>();
 
-        public ILineProtocolPoint AddPoint(T fieldValue, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        public ILineProtocolPoint AddPoint(T fieldValue, ICollection<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T>(this, fieldValue, tagValues, utcTimestamp);
         }
@@ -100,7 +115,7 @@ namespace InfluxDB.LineProtocol.Payload
 
         public Action<TextWriter, T2> Field2ValueWriter { get; } = LineProtocolSyntax.GetWriter<T2>();
 
-        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, ICollection<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T1, T2>(this, field1Value, field2Value, tagValues, utcTimestamp);
         }
@@ -119,7 +134,7 @@ namespace InfluxDB.LineProtocol.Payload
 
         public Action<TextWriter, T3> Field3ValueWriter { get; } = LineProtocolSyntax.GetWriter<T3>();
 
-        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, ICollection<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T1, T2, T3>(this, field1Value, field2Value, field3Value, tagValues, utcTimestamp);
         }
@@ -140,7 +155,7 @@ namespace InfluxDB.LineProtocol.Payload
 
         public Action<TextWriter, T4> Field4ValueWriter { get; } = LineProtocolSyntax.GetWriter<T4>();
 
-        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, T4 field4Value, IReadOnlyList<string> tagValues = null, DateTime? utcTimestamp = null)
+        public ILineProtocolPoint AddPoint(T1 field1Value, T2 field2Value, T3 field3Value, T4 field4Value, ICollection<string> tagValues = null, DateTime? utcTimestamp = null)
         {
             return new LineProtocolMeasurePoint<T1, T2, T3, T4>(this, field1Value, field2Value, field3Value, field4Value, tagValues, utcTimestamp);
         }

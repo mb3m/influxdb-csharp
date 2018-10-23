@@ -14,13 +14,13 @@ namespace InfluxDB.Collector.Configuration
             _emitters = emitters;
         }
 
-        public void Emit(PointData point)
+        public void Emit(IPointData point)
         {
             foreach (var emitter in _emitters)
                 emitter.Emit(point);
         }
 
-        public void Emit(IEnumerable<PointData> points)
+        public void Emit(IEnumerable<IPointData> points)
         {
             foreach (var emitter in _emitters)
                 emitter.Emit(points);

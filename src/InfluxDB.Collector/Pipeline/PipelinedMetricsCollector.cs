@@ -17,16 +17,19 @@ namespace InfluxDB.Collector.Pipeline
             _dispose = dispose;
         }
 
-        protected override void Emit(PointData point)
+        protected override void Emit(IPointData point)
         {
-            _enricher.Enrich(point);
+            if(point is IMeasurement measurement)
+                _enricher.Enrich(measurement);
+
             _emitter.Emit(point);
         }
 
-        protected override void Emit(IEnumerable<PointData> points)
+        protected override void Emit(IEnumerable<IPointData> points)
         {
             foreach (var point in points)
-                _enricher.Enrich(point);
+                if (point is IMeasurement measurement)
+                    _enricher.Enrich(measurement);
 
             _emitter.Emit(points);
         }
@@ -35,6 +38,11 @@ namespace InfluxDB.Collector.Pipeline
         {
             if (disposing)
                 _dispose();
+        }
+
+        protected override void RegisterMeasurement(IMeasurement measurement)
+        {
+            _enricher.Enrich(measurement);
         }
     }
 }

@@ -4,8 +4,8 @@ namespace InfluxDB.Collector.Pipeline
 {
     interface IPointEmitter
     {
-        void Emit(PointData point);
+        void Emit(IPointData point);
 
-        void Emit(IEnumerable<PointData> points);
+        void Emit(IEnumerable<IPointData> points);
     }
 }

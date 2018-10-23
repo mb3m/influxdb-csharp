@@ -1,10 +1,9 @@
-﻿using Xunit;
-using InfluxDB.LineProtocol.Payload;
+﻿using System;
 using System.Collections.Generic;
-using System;
 using System.IO;
+using Xunit;
 
-namespace InfluxDB.LineProtocol.Tests
+namespace InfluxDB.LineProtocol.Payload
 {
     public class LineProtcolPointTests
     {

@@ -1,4 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("InfluxDB.LineProtocol.Tests")]
-[assembly: InternalsVisibleTo("Sample")]
+[assembly: InternalsVisibleTo("InfluxDB.Tests")]
+[assembly: InternalsVisibleTo("Benchmark")]

@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using InfluxDB.Collector;
-using InfluxDB.Collector.Pipeline;
-using Xunit;
+﻿using InfluxDB.Collector.Pipeline;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 
-namespace InfluxDB.LineProtocol.Tests.Collector
+namespace InfluxDB.Collector
 {
     public class MetricsCollectorTests
     {
@@ -22,7 +21,7 @@ namespace InfluxDB.LineProtocol.Tests.Collector
         [Fact]
         public void SpecializedCollectorsCanBeCreated()
         {
-            var points = new List<PointData>();
+            var points = new List<IPointData>();
 
             var collector = new CollectorConfiguration()
                 .WriteTo.Emitter(pts => points.AddRange(pts))
@@ -35,7 +34,7 @@ namespace InfluxDB.LineProtocol.Tests.Collector
 
             specialized.Increment("m");
 
-            var point = points.Single();
+            var point = (PointData)points.Single();
             Assert.Equal("42", point.Tags.Single().Value);
 
             Assert.NotNull(specialized);

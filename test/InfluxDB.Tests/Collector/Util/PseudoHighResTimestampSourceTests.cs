@@ -1,10 +1,9 @@
 ﻿using System;
-using Xunit;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
-using InfluxDB.Collector.Util;
 
-namespace InfluxDB.LineProtocol.Tests.Collector.Util
+namespace InfluxDB.Collector.Util
 {
     public class PseudoHighResTimeStampSourceTests
     {

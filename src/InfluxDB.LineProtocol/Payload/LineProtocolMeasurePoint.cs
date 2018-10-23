@@ -7,23 +7,25 @@ namespace InfluxDB.LineProtocol.Payload
     public class LineProtocolMeasurePoint : ILineProtocolPoint
     {
         private readonly LineProtocolMeasureBase _measure;
-        private readonly IReadOnlyCollection<object> _fieldValues;
-        private readonly IReadOnlyCollection<string> _tagValues;
+        private readonly IEnumerable<object> _fieldValues;
+        private readonly IEnumerable<string> _tagValues;
         private readonly DateTime? _utcTimestamp;
 
         public LineProtocolMeasurePoint(
             LineProtocolMeasureBase measure,
             IReadOnlyCollection<object> fieldValues,
-            IReadOnlyCollection<string> tagValues = null,
+            ICollection<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
+
+            int[] x = new int[3];
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
             _fieldValues = fieldValues ?? throw new ArgumentNullException(nameof(fieldValues));
-            if (_fieldValues.Count == 0)
+            if (fieldValues.Count == 0)
                 throw new ArgumentException("At least one field must be specified", nameof(fieldValues));
 
-            if (_fieldValues.Count != _measure.FieldNames.Length)
-                throw new ArgumentException($"The number of field values specified ({_fieldValues.Count}) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
+            if (fieldValues.Count != _measure.FieldNames.Length)
+                throw new ArgumentException($"The number of field values specified ({fieldValues.Count}) is different from the number of fields declared in the measure ({_measure.FieldNames.Length})");
 
             if ((tagValues?.Count ?? 0) != (_measure.TagNames?.Length ?? 0))
                 throw new ArgumentException($"The number of tag values specified ({tagValues?.Count ?? 0}) is different from the number of tags declared in the measure ({_measure.TagNames?.Length ?? 0})");
@@ -46,13 +48,13 @@ namespace InfluxDB.LineProtocol.Payload
     {
         private readonly LineProtocolMeasure<T> _measure;
         private readonly T _fieldValue;
-        private readonly IReadOnlyCollection<string> _tagValues;
+        private readonly IEnumerable<string> _tagValues;
         private readonly DateTime? _utcTimestamp;
 
         public LineProtocolMeasurePoint(
             LineProtocolMeasure<T> measure,
             T fieldValue,
-            IReadOnlyCollection<string> tagValues = null,
+            ICollection<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
@@ -89,14 +91,14 @@ namespace InfluxDB.LineProtocol.Payload
         private readonly LineProtocolMeasure<T1, T2> _measure;
         private readonly T1 _field1Value;
         private readonly T2 _field2Value;
-        private readonly IReadOnlyCollection<string> _tagValues;
+        private readonly IEnumerable<string> _tagValues;
         private readonly DateTime? _utcTimestamp;
 
         public LineProtocolMeasurePoint(
             LineProtocolMeasure<T1, T2> measure,
             T1 field1Value,
             T2 field2Value,
-            IReadOnlyCollection<string> tagValues = null,
+            ICollection<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
@@ -140,7 +142,7 @@ namespace InfluxDB.LineProtocol.Payload
         private readonly T1 _field1Value;
         private readonly T2 _field2Value;
         private readonly T3 _field3Value;
-        private readonly IReadOnlyCollection<string> _tagValues;
+        private readonly IEnumerable<string> _tagValues;
         private readonly DateTime? _utcTimestamp;
 
         public LineProtocolMeasurePoint(
@@ -148,7 +150,7 @@ namespace InfluxDB.LineProtocol.Payload
             T1 field1Value,
             T2 field2Value,
             T3 field3Value,
-            IReadOnlyCollection<string> tagValues = null,
+            ICollection<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));
@@ -199,7 +201,7 @@ namespace InfluxDB.LineProtocol.Payload
         private readonly T2 _field2Value;
         private readonly T3 _field3Value;
         private readonly T4 _field4Value;
-        private readonly IReadOnlyCollection<string> _tagValues;
+        private readonly IEnumerable<string> _tagValues;
         private readonly DateTime? _utcTimestamp;
 
         public LineProtocolMeasurePoint(
@@ -208,7 +210,7 @@ namespace InfluxDB.LineProtocol.Payload
             T2 field2Value,
             T3 field3Value,
             T4 field4Value,
-            IReadOnlyCollection<string> tagValues = null,
+            ICollection<string> tagValues = null,
             DateTime? utcTimestamp = null)
         {
             _measure = measure ?? throw new ArgumentNullException(nameof(measure));

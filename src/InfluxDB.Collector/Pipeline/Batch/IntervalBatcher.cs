@@ -11,7 +11,7 @@ namespace InfluxDB.Collector.Pipeline.Batch
     class IntervalBatcher : IPointEmitter, IDisposable
     {
         readonly object _queueLock = new object();
-        Queue<PointData> _queue = new Queue<PointData>();
+        Queue<IPointData> _queue = new Queue<IPointData>();
 
         readonly TimeSpan _interval;
         readonly int? _maxBatchSize;
@@ -54,14 +54,14 @@ namespace InfluxDB.Collector.Pipeline.Batch
         {
             try
             {
-                Queue<PointData> batch;
+                Queue<IPointData> batch;
                 lock (_queueLock)
                 {
                     if (_queue.Count == 0)
                         return Task.Delay(0);
 
                     batch = _queue;
-                    _queue = new Queue<PointData>();
+                    _queue = new Queue<IPointData>();
                 }
 
                 if (_maxBatchSize == null || batch.Count <= _maxBatchSize.Value)
@@ -92,7 +92,7 @@ namespace InfluxDB.Collector.Pipeline.Batch
             return Task.Delay(0);
         }
 
-        public void Emit(PointData point)
+        public void Emit(IPointData point)
         {
             lock (_stateLock)
             {
@@ -110,7 +110,7 @@ namespace InfluxDB.Collector.Pipeline.Batch
             }
         }
 
-        public void Emit(IEnumerable<PointData> points)
+        public void Emit(IEnumerable<IPointData> points)
         {
             lock (_stateLock)
             {

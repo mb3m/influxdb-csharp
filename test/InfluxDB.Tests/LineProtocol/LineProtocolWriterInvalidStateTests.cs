@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace InfluxDB.LineProtocol.Tests
+namespace InfluxDB.LineProtocol
 {
     public class LineProtocolWriterInvalidStateTests
     {
