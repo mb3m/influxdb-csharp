@@ -18,6 +18,11 @@ namespace InfluxDB.LineProtocol
         }
 
         public LineProtocolWriter(Precision precision, PrecisionResolutionStrategy defaultResolutionStrategy = PrecisionResolutionStrategy.Error)
+            : this(new StringWriter(), precision, defaultResolutionStrategy)
+        {
+        }
+
+        public LineProtocolWriter(TextWriter writer, Precision precision, PrecisionResolutionStrategy defaultResolutionStrategy = PrecisionResolutionStrategy.Error)
         {
             if (!Enum.IsDefined(typeof(Precision), precision))
             {
@@ -31,7 +36,7 @@ namespace InfluxDB.LineProtocol
 
             this.Precision = precision;
             this.defaultResolutionStrategy = defaultResolutionStrategy;
-            this.textWriter = new StringWriter();
+            this.textWriter = writer;
         }
 
         public Precision Precision { get; }
